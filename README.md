@@ -2,6 +2,10 @@
 
 **A reliability monitor for LLM & agent outputs — tracks whether a model regresses run over run.**
 
+**[▶ Live demo](https://reliabench.vercel.app)** · the demo data is a real, blind Claude run (no API key — via Claude Code).
+
+![reliabench dashboard](docs/dashboard.png)
+
 reliabench runs an evaluation set against a model on every run, scores each response
 with deterministic judges (exact / contains / regex / JSON-validity / **JSON-schema**)
 plus an optional model-graded **LLM-as-judge**, and renders the resulting reliability
@@ -110,7 +114,9 @@ remains available for fully offline, reproducible runs (see Quickstart).
 
 ## Screenshots
 
-<!-- TODO: add dashboard screenshot -->
+![reliabench dashboard — KPIs, reliability trend, per-category pass rate, and the cases table showing real Claude failures](docs/dashboard.png)
+
+Live: **https://reliabench.vercel.app**
 
 ## Tech
 

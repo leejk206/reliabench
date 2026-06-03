@@ -16,3 +16,4 @@ dashboard/out/
 .env
 .env.local
 *.local
+.vercel
