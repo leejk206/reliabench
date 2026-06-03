@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reliabench"
+version = "0.1.0"
+description = "A small, stdlib-only LLM/agent reliability eval harness"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.30"]
+openai = ["openai>=1.0"]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+reliabench = "reliabench.cli:main"
+
+[tool.setuptools]
+packages = ["reliabench"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

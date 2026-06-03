@@ -1,0 +1,26 @@
+{
+  "name": "llm-faithfulness-v1",
+  "cases": [
+    {
+      "id": "fa1",
+      "category": "faithfulness",
+      "prompt": "Summarize the following text in one sentence. Do not add any facts that are not present in the source.\n\nSOURCE: Acme shipped its v2 API on Tuesday. It adds cursor-based pagination and deprecates the old offset parameter, which will be removed in six months.",
+      "expected": "A faithful one-sentence summary that mentions the v2 API and pagination/deprecation, introduces NO facts absent from the source (no invented dates, numbers, or features), and does not contradict the source.",
+      "judge": "llm"
+    },
+    {
+      "id": "fa2",
+      "category": "faithfulness",
+      "prompt": "Answer the question using ONLY the context. If the context does not contain the answer, say you don't know.\n\nCONTEXT: Our refund policy allows returns within 30 days for store credit.\nQUESTION: Can I get a cash refund after 45 days?",
+      "expected": "The answer must be grounded only in the context: it should indicate that a 45-day cash refund is not supported by the policy (returns are within 30 days, store credit only), without fabricating any policy details not present in the context.",
+      "judge": "llm"
+    },
+    {
+      "id": "fa3",
+      "category": "faithfulness",
+      "prompt": "Rewrite this changelog entry for a non-technical audience without changing its meaning.\n\nENTRY: Fixed a race condition in the worker pool that occasionally dropped queued jobs under high load.",
+      "expected": "A plain-language rewrite that preserves the original meaning (a bug that could occasionally lose queued work under heavy load is now fixed) and does not overstate the fix or invent unrelated improvements.",
+      "judge": "llm"
+    }
+  ]
+}
