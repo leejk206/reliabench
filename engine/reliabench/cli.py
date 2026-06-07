@@ -38,6 +38,7 @@ def build_parser() -> argparse.ArgumentParser:
     runp.add_argument("--out", required=True, help="path to write results.json")
     runp.add_argument("--history", required=True, help="path to history.json (created if absent)")
     runp.add_argument("--threshold", type=float, default=1.0, help="pass threshold (default 1.0)")
+    runp.add_argument("--workers", type=int, default=1, help="parallel workers (default 1 = sequential)")
     return parser
 
 
@@ -52,6 +53,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             out_path=args.out,
             history_path=args.history,
             threshold=args.threshold,
+            workers=args.workers,
         )
         _print_summary(doc)
         print(f"  wrote {args.out}")

@@ -91,3 +91,27 @@ def test_history_appended_and_run_id_increments(tmp_path):
     for entry in history:
         for k in ("run_id", "timestamp", "pass_rate", "accuracy", "avg_latency_ms"):
             assert k in entry
+
+
+def test_parallel_workers_same_results(tmp_path):
+    """workers=4 must produce same ordered results as sequential run."""
+    out_seq = tmp_path / "results_seq.json"
+    out_par = tmp_path / "results_par.json"
+    hist_seq = tmp_path / "hist_seq.json"
+    hist_par = tmp_path / "hist_par.json"
+
+    doc_seq = run(str(EVALSET), "mock", str(out_seq), str(hist_seq), workers=1)
+    doc_par = run(str(EVALSET), "mock", str(out_par), str(hist_par), workers=4)
+
+    # Same number of cases
+    assert len(doc_par["cases"]) == len(doc_seq["cases"])
+
+    # Same order (evalset order preserved)
+    for seq_c, par_c in zip(doc_seq["cases"], doc_par["cases"]):
+        assert seq_c["id"] == par_c["id"], "order mismatch"
+        assert seq_c["passed"] == par_c["passed"]
+        assert seq_c["score"] == par_c["score"]
+
+    # Summary matches
+    assert doc_par["summary"]["passed"] == doc_seq["summary"]["passed"]
+    assert doc_par["summary"]["pass_rate"] == doc_seq["summary"]["pass_rate"]

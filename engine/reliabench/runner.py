@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
@@ -45,13 +46,13 @@ def run(
     out_path: str,
     history_path: str,
     threshold: float = 1.0,
+    workers: int = 1,
 ) -> Dict:
     """Execute the eval and persist results. Returns the results dict."""
     evalset = load_evalset(evalset_path)
     provider = get_provider(model)
 
-    results: List[CaseResult] = []
-    for case in evalset.cases:
+    def _run_case(case) -> CaseResult:
         if hasattr(provider, "generate_case"):
             output, latency = provider.generate_case(case)
         else:  # pragma: no cover
@@ -60,20 +61,30 @@ def run(
         judge_fn = get_judge(case.judge, provider=provider)
         score = float(judge_fn(output, case.expected, case))
         passed = score >= threshold
-
-        results.append(
-            CaseResult(
-                id=case.id,
-                category=case.category,
-                prompt=case.prompt,
-                expected=case.expected,
-                output=output,
-                passed=passed,
-                score=score,
-                latency_ms=int(latency),
-                judge=case.judge,
-            )
+        return CaseResult(
+            id=case.id,
+            category=case.category,
+            prompt=case.prompt,
+            expected=case.expected,
+            output=output,
+            passed=passed,
+            score=score,
+            latency_ms=int(latency),
+            judge=case.judge,
         )
+
+    if workers <= 1:
+        results: List[CaseResult] = [_run_case(c) for c in evalset.cases]
+    else:
+        # Preserve evalset ordering: map index -> result, then sort.
+        indexed_cases = list(enumerate(evalset.cases))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {pool.submit(_run_case, case): idx for idx, case in indexed_cases}
+            unordered: List[tuple] = []
+            for future in as_completed(futures):
+                idx = futures[future]
+                unordered.append((idx, future.result()))
+        results = [r for _, r in sorted(unordered, key=lambda x: x[0])]
 
     summary = aggregate(results)
 
