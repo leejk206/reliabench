@@ -12,6 +12,7 @@ export default function Page() {
   const [history, setHistory] = useState<History | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,6 +48,10 @@ export default function Page() {
       ? results.cases.filter((c) => !c.passed)
       : results.cases;
   }, [results, filter]);
+
+  function toggleDetail(id: string) {
+    setExpandedId((prev) => (prev === id ? null : id));
+  }
 
   if (error) {
     return (
@@ -224,8 +229,13 @@ export default function Page() {
               </tr>
             </thead>
             <tbody>
-              {cases.map((c) => (
-                <tr key={c.id}>
+              {cases.flatMap((c) => [
+                <tr
+                  key={c.id}
+                  onClick={() => toggleDetail(c.id)}
+                  style={{ cursor: "pointer" }}
+                  className={expandedId === c.id ? "row-expanded" : undefined}
+                >
                   <td className="id">{c.id}</td>
                   <td>
                     <span className="chip">{c.category}</span>
@@ -248,8 +258,32 @@ export default function Page() {
                   <td className="text">
                     <div className="truncate mono">{truncate(c.output, 80)}</div>
                   </td>
-                </tr>
-              ))}
+                </tr>,
+                expandedId === c.id ? (
+                  <tr key={`detail-${c.id}`}>
+                    <td colSpan={8} className="detail-panel">
+                      <div className="detail-section">
+                        <div className="detail-label">Prompt</div>
+                        <pre className="detail-code">{c.prompt}</pre>
+                      </div>
+                      <div className="detail-row">
+                        <div className="detail-section">
+                          <div className="detail-label">Expected</div>
+                          <pre className={`detail-code detail-expected${c.passed ? " pass" : ""}`}>{c.expected}</pre>
+                        </div>
+                        <div className="detail-section">
+                          <div className="detail-label">Output</div>
+                          <pre className={`detail-code${c.passed ? " detail-pass" : " detail-fail"}`}>{c.output}</pre>
+                        </div>
+                      </div>
+                      <div className="detail-section">
+                        <div className="detail-label">Judge</div>
+                        <span className="chip judge">{c.judge}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : null,
+              ])}
               {cases.length === 0 && (
                 <tr>
                   <td colSpan={8} style={{ textAlign: "center", padding: "28px" }}>
